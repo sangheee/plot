@@ -157,10 +157,21 @@ func (p *Plot) Draw(c draw.Canvas) {
 	ywidth := y.size()
 
 	xheight := x.size()
-	x.draw(padX(p, draw.Crop(c, ywidth, 0, 0, 0)))
+	
+	var rightCrop float64
+	if !p.Legend.Left {
+		fontSize := float64(p.Legend.Font.Size)
+		for _, e := range p.Legend.entries {
+			legendLength := float64(p.Legend.ThumbnailWidth) + float64(len(e.text))*fontSize/2
+			if rightCrop < legendLength {
+				rightCrop = legendLength
+			}
+		}
+	}
+	x.draw(padX(p, draw.Crop(c, ywidth, -vg.Length(rightCrop), 0, 0)))
 	y.draw(padY(p, draw.Crop(c, 0, 0, xheight, 0)))
 
-	dataC := padY(p, padX(p, draw.Crop(c, ywidth, 0, xheight, 0)))
+	dataC := padY(p, padX(p, draw.Crop(c, ywidth, -vg.Length(rightCrop), xheight, 0)))
 	for _, data := range p.plotters {
 		data.Plot(dataC, p)
 	}
